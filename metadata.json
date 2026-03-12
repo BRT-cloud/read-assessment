@@ -1,0 +1,5 @@
+{
+  "name": "한국어 읽기 진단평가",
+  "description": "자모음부터 글 읽기 이해까지 평가하는 읽기 진단 도구입니다.",
+  "requestFramePermissions": []
+}
