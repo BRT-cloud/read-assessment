@@ -1,9 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap");
 @import "tailwindcss";
 
 :root {
-  font-family: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
-  color: #171717;
-  background: #f7f7f5;
+  font-family: "Gaegu", "Nanum Pen Script", "Comic Sans MS", cursive;
+  color: #29251f;
+  background: #fbfaf7;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -15,7 +16,9 @@
 body {
   margin: 0;
   min-width: 320px;
-  background: #f7f7f5;
+  background: #fbfaf7;
+  font-size: 18px;
+  letter-spacing: 0.01em;
 }
 
 button {

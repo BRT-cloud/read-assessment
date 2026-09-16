@@ -7,7 +7,13 @@ type GameState = 'welcome' | 'quiz' | 'result';
 type AnswerFeedback = 'correct' | 'retry' | 'incorrect' | null;
 
 const questionLevels: QuestionLevel[] = ['자모음', '단어', '문장', '이해', '문단'];
-const QUESTIONS_PER_LEVEL = 20;
+const QUESTIONS_PER_LEVEL: Record<QuestionLevel, number> = {
+  자모음: 4,
+  단어: 4,
+  문장: 4,
+  이해: 14,
+  문단: 4,
+};
 
 function shuffle<T>(items: T[]): T[] {
   const shuffled = [...items];
@@ -21,10 +27,11 @@ function shuffle<T>(items: T[]): T[] {
 function selectQuizQuestions(): Question[] {
   return questionLevels.flatMap(level => {
     const levelQuestions = questions.filter(question => question.level === level);
-    if (levelQuestions.length < QUESTIONS_PER_LEVEL) {
-      throw new Error(`${level} 문항이 ${QUESTIONS_PER_LEVEL}개보다 적습니다.`);
+    const questionCount = QUESTIONS_PER_LEVEL[level];
+    if (levelQuestions.length < questionCount) {
+      throw new Error(`${level} 문항이 ${questionCount}개보다 적습니다.`);
     }
-    return shuffle(levelQuestions).slice(0, QUESTIONS_PER_LEVEL);
+    return shuffle(levelQuestions).slice(0, questionCount);
   });
 }
 
@@ -94,23 +101,23 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f7f5] text-[#171717] font-sans selection:bg-[#171717]/10">
-      <header className="bg-[#f7f7f5]/90 backdrop-blur-xl border-b border-black/10 py-4 px-6 sticky top-0 z-50">
+    <div className="min-h-screen bg-[#fbfaf7] text-[#29251f] font-sans selection:bg-[#f0d9c7]">
+      <header className="bg-[#fbfaf7] border-b border-[#e8e0d7] py-5 px-5 sticky top-0 z-50">
         <div className="flex items-center justify-between mb-3 max-w-3xl mx-auto">
-          <div className="flex items-center gap-2 text-[#171717]">
+          <div className="flex items-center gap-3 text-[#29251f]">
             <BookOpen className="w-6 h-6" />
-            <h1 className="text-xl font-semibold tracking-tight">한국어 읽기 진단평가</h1>
+            <h1 className="text-xl font-bold tracking-tight">한국어 읽기 진단평가</h1>
           </div>
           {gameState === 'quiz' && (
-            <div className="text-[15px] font-medium text-[#666]">
+            <div className="text-[16px] font-bold text-[#776e64]">
               {currentQuestionIndex + 1} / {currentQuizQuestions.length}
             </div>
           )}
         </div>
         {gameState === 'quiz' && (
-          <div className="w-full max-w-3xl mx-auto bg-[#deded9] h-1.5 rounded-full overflow-hidden">
+          <div className="w-full max-w-3xl mx-auto bg-[#ebe4dc] h-2 rounded-full overflow-hidden">
             <div 
-              className="bg-[#171717] h-full transition-all duration-500 ease-out rounded-full"
+              className="bg-[#d7835b] h-full transition-all duration-500 ease-out rounded-full"
               style={{ width: `${((currentQuestionIndex + 1) / currentQuizQuestions.length) * 100}%` }}
             />
           </div>
@@ -155,13 +162,13 @@ function WelcomeScreen({ onStart }: { onStart: () => void; key?: string }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -20, scale: 0.98 }}
       transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-      className="bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-12 text-center"
+      className="bg-white border border-[#e8e0d7] rounded-[24px] shadow-[0_8px_30px_rgba(67,48,32,0.05)] p-7 md:p-11 text-center"
     >
-      <div className="w-20 h-20 bg-[#007AFF]/10 text-[#007AFF] rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="w-20 h-20 bg-[#f8e4d7] text-[#c76842] rounded-[22px] flex items-center justify-center mx-auto mb-6">
         <BookOpen className="w-10 h-10" />
       </div>
-      <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-black">읽기 실력을 알아볼까요?</h2>
-      <p className="text-[#8E8E93] text-[17px] mb-10 max-w-lg mx-auto leading-relaxed">
+      <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-[#29251f]">읽기 실력을 알아볼까요?</h2>
+      <p className="text-[#776e64] text-[18px] mb-10 max-w-lg mx-auto leading-relaxed">
         자음과 모음부터 긴 글 읽기까지, 단계별 문항으로 읽기 실력을 진단해 보세요.
       </p>
       
@@ -173,16 +180,16 @@ function WelcomeScreen({ onStart }: { onStart: () => void; key?: string }) {
           { title: '4단계', desc: '글 이해하기' },
           { title: '5단계', desc: '문단 이해하기' },
         ].map((step, i) => (
-          <div key={i} className="flex-1 min-w-[130px] max-w-[200px] bg-[#F2F2F7] p-4 rounded-[20px]">
-            <div className="text-[#007AFF] font-semibold text-[13px] mb-1 tracking-wide">{step.title}</div>
-            <div className="font-medium text-black text-[15px]">{step.desc}</div>
+          <div key={i} className="flex-1 min-w-[130px] max-w-[200px] bg-[#fbf7f2] border border-[#eee4da] p-4 rounded-[16px]">
+            <div className="text-[#c76842] font-bold text-[14px] mb-1 tracking-wide">{step.title}</div>
+            <div className="font-bold text-[#29251f] text-[16px]">{step.desc}</div>
           </div>
         ))}
       </div>
 
       <button 
         onClick={onStart}
-        className="inline-flex items-center justify-center gap-2 bg-[#007AFF] hover:bg-[#0056b3] text-white px-8 py-4 rounded-full text-[17px] font-semibold transition-all active:scale-95 w-full sm:w-auto"
+        className="inline-flex items-center justify-center gap-2 bg-[#29251f] hover:bg-[#4a4037] text-white px-8 py-4 rounded-[14px] text-[18px] font-bold transition-all active:scale-95 w-full sm:w-auto"
       >
         <Play className="w-5 h-5 fill-current" />
         평가 시작하기
@@ -212,10 +219,10 @@ function QuizScreen({
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: -20, scale: 0.98 }}
       transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-      className="bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden"
+      className="bg-white border border-[#e8e0d7] rounded-[24px] shadow-[0_8px_30px_rgba(67,48,32,0.05)] overflow-hidden"
     >
       <div className="px-6 py-5 flex items-center justify-between border-b border-black/5">
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-[#007AFF]/10 text-[#007AFF]">
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-[14px] font-bold bg-[#f8e4d7] text-[#b85e3c]">
           {question.level} 단계
         </span>
         {currentAttempts > 0 && wrongAnswer && (
@@ -236,20 +243,20 @@ function QuizScreen({
       
       <div className="p-6 md:p-10">
         {question.passage && (
-          <div className="mb-8 bg-[#f4f4f1] border-l-2 border-[#171717] p-6 rounded-r-[8px]">
-            <p className="text-[17px] md:text-[19px] leading-relaxed text-black font-medium">
+          <div className="mb-8 bg-[#fbf7f2] border-l-2 border-[#d7835b] p-6 rounded-r-[8px]">
+            <p className="text-[19px] md:text-[21px] leading-[1.8] text-[#29251f] font-bold">
               {question.passage}
             </p>
           </div>
         )}
 
-        <h3 className="text-2xl md:text-[28px] font-bold mb-8 text-black tracking-tight leading-snug">
+        <h3 className="text-2xl md:text-[30px] font-bold mb-8 text-[#29251f] tracking-tight leading-snug">
           {question.question}
         </h3>
 
         <div className="flex flex-col md:flex-row gap-8 mb-4">
           {question.emoji && !question.passage && (
-            <div className="shrink-0 w-full md:w-64 aspect-square bg-[#F2F2F7] rounded-[28px] flex items-center justify-center overflow-hidden">
+            <div className="shrink-0 w-full md:w-64 aspect-square bg-[#fbf7f2] border border-[#eee4da] rounded-[20px] flex items-center justify-center overflow-hidden">
               <span 
                 className="text-8xl transition-transform duration-300"
                 style={{ transform: `scale(${question.imageScale || 1})` }}
@@ -267,10 +274,10 @@ function QuizScreen({
                   key={idx}
                   onClick={() => onAnswer(option)}
                   disabled={wrongAnswer !== null || answerFeedback === 'correct' || answerFeedback === 'incorrect'}
-                  className={`text-left px-6 py-4 rounded-[20px] transition-all text-[17px] font-medium group relative overflow-hidden
+                  className={`text-left px-6 py-4 rounded-[14px] transition-all text-[18px] font-bold group relative overflow-hidden border border-[#eee4da]
                     ${isWrong 
-                      ? 'bg-[#FF3B30]/10 text-[#FF3B30]' 
-                      : 'bg-[#F2F2F7] hover:bg-[#E5E5EA] text-black active:scale-[0.98]'
+                      ? 'bg-[#fbe8e4] text-[#b54e43] border-[#edc2bb]' 
+                      : 'bg-white hover:bg-[#fbf7f2] text-[#29251f] active:scale-[0.98]'
                     }
                     ${wrongAnswer !== null && !isWrong ? 'opacity-50 cursor-not-allowed' : ''}
                   `}
@@ -329,16 +336,16 @@ function ResultScreen({
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.5, type: 'spring', bounce: 0.4 }}
-      className="bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-12 text-center"
+      className="bg-white border border-[#e8e0d7] rounded-[24px] shadow-[0_8px_30px_rgba(67,48,32,0.05)] p-7 md:p-11 text-center"
     >
-      <div className="w-24 h-24 bg-[#34C759]/10 text-[#34C759] rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="w-24 h-24 bg-[#e6f1e8] text-[#4c8a5a] rounded-[22px] flex items-center justify-center mx-auto mb-6">
         <CheckCircle className="w-12 h-12" />
       </div>
       
-      <h2 className="text-[32px] font-bold mb-2 tracking-tight text-black">진단평가 완료!</h2>
-      <p className="text-[#8E8E93] mb-10 text-[17px]">{feedback}</p>
+      <h2 className="text-[34px] font-bold mb-2 tracking-tight text-[#29251f]">진단평가 완료!</h2>
+      <p className="text-[#776e64] mb-10 text-[18px]">{feedback}</p>
       
-      <div className="bg-[#F2F2F7] rounded-[28px] p-8 mb-10 max-w-sm mx-auto">
+      <div className="bg-[#fbf7f2] border border-[#eee4da] rounded-[20px] p-8 mb-10 max-w-sm mx-auto">
         <div className="text-[#8E8E93] font-semibold mb-2 text-[15px] uppercase tracking-wider">나의 점수</div>
         <div className="text-[72px] font-bold text-black mb-1 leading-none tracking-tighter">
           {score} <span className="text-[32px] text-[#C7C7CC] font-semibold">/ {total}</span>
@@ -346,7 +353,7 @@ function ResultScreen({
         <div className="text-[#8E8E93] font-medium text-[17px]">({percentage}점)</div>
       </div>
 
-      <div className="bg-white rounded-[28px] border border-black/5 shadow-sm p-6 mb-10 text-left max-w-md mx-auto">
+      <div className="bg-white rounded-[20px] border border-[#e8e0d7] p-6 mb-10 text-left max-w-md mx-auto">
         <h3 className="text-[19px] font-bold mb-6 text-black text-center tracking-tight">단계별 분석 결과</h3>
         <div className="space-y-5">
           {Object.entries(levelStats).map(([level, stats], idx) => (
@@ -366,12 +373,12 @@ function ResultScreen({
             </div>
           ))}
         </div>
-        <div className="mt-8 p-4 bg-[#007AFF]/10 rounded-[20px] text-[#007AFF] text-[15px] font-medium text-center leading-relaxed">
+        <div className="mt-8 p-4 bg-[#f8e4d7] rounded-[14px] text-[#a95537] text-[16px] font-bold text-center leading-relaxed">
           {percentage >= 80 
             ? '모든 단계를 골고루 잘 이해하고 있어요. 앞으로도 다양한 책을 읽어보세요!' 
             : '틀린 문제가 있는 단계를 중심으로 복습해보면 더욱 좋아질 거예요!'}
         </div>
-        <div className="mt-4 p-5 bg-[#f7f7f5] rounded-[20px] text-left">
+        <div className="mt-4 p-5 bg-[#fbf7f2] rounded-[14px] text-left">
           <h4 className="font-bold text-[16px] mb-2">학습 분석</h4>
           <p className="text-[#666] text-[15px] leading-relaxed">{analysis}</p>
         </div>
@@ -379,7 +386,7 @@ function ResultScreen({
 
       <button 
         onClick={onRestart}
-        className="inline-flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-8 py-4 rounded-full text-[17px] font-semibold transition-all active:scale-95 w-full sm:w-auto"
+        className="inline-flex items-center justify-center gap-2 bg-[#29251f] hover:bg-[#4a4037] text-white px-8 py-4 rounded-[14px] text-[18px] font-bold transition-all active:scale-95 w-full sm:w-auto"
       >
         <RefreshCw className="w-5 h-5" />
         다시 평가하기
