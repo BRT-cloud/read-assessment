@@ -1,20 +1,47 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, CheckCircle, ChevronRight, Play, RefreshCw } from 'lucide-react';
-import { questions, Question } from './data/questions';
+import { questions, Question, QuestionLevel } from './data/questions';
 
 type GameState = 'welcome' | 'quiz' | 'result';
+type AnswerFeedback = 'correct' | 'retry' | 'incorrect' | null;
+
+const questionLevels: QuestionLevel[] = ['자모음', '단어', '문장', '이해', '문단'];
+const QUESTIONS_PER_LEVEL = 20;
+
+function shuffle<T>(items: T[]): T[] {
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function selectQuizQuestions(): Question[] {
+  return questionLevels.flatMap(level => {
+    const levelQuestions = questions.filter(question => question.level === level);
+    if (levelQuestions.length < QUESTIONS_PER_LEVEL) {
+      throw new Error(`${level} 문항이 ${QUESTIONS_PER_LEVEL}개보다 적습니다.`);
+    }
+    return shuffle(levelQuestions).slice(0, QUESTIONS_PER_LEVEL);
+  });
+}
 
 export default function App() {
   const [gameState, setGameState] = useState<GameState>('welcome');
+  const [currentQuizQuestions, setCurrentQuizQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [currentAttempts, setCurrentAttempts] = useState(0);
   const [wrongAnswer, setWrongAnswer] = useState<string | null>(null);
+  const [answerFeedback, setAnswerFeedback] = useState<AnswerFeedback>(null);
   const [results, setResults] = useState<Record<string, boolean>>({});
 
   const startQuiz = () => {
+    const selectedQuestions = selectQuizQuestions();
+    setCurrentQuizQuestions(selectedQuestions);
     setGameState('quiz');
     setCurrentQuestionIndex(0);
     setScore(0);
@@ -22,12 +49,14 @@ export default function App() {
     setResults({});
     setCurrentAttempts(0);
     setWrongAnswer(null);
+    setAnswerFeedback(null);
   };
 
   const moveToNext = () => {
     setCurrentAttempts(0);
     setWrongAnswer(null);
-    if (currentQuestionIndex < questions.length - 1) {
+    setAnswerFeedback(null);
+    if (currentQuestionIndex < currentQuizQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       setGameState('result');
@@ -37,7 +66,7 @@ export default function App() {
   const handleAnswer = (answer: string) => {
     if (wrongAnswer) return; // Prevent clicking while showing feedback
 
-    const currentQuestion = questions[currentQuestionIndex];
+    const currentQuestion = currentQuizQuestions[currentQuestionIndex];
     const isCorrect = answer === currentQuestion.answer;
     
     setAnswers(prev => ({ ...prev, [currentQuestion.id]: answer }));
@@ -45,17 +74,21 @@ export default function App() {
     if (isCorrect) {
       setResults(prev => ({ ...prev, [currentQuestion.id]: true }));
       setScore(prev => prev + 1);
-      moveToNext();
+      setAnswerFeedback('correct');
+      setTimeout(() => moveToNext(), 700);
     } else {
       if (currentAttempts === 0) {
         setCurrentAttempts(1);
         setWrongAnswer(answer);
+        setAnswerFeedback('retry');
         setTimeout(() => {
           setWrongAnswer(null);
+          setAnswerFeedback(null);
         }, 1500);
       } else {
         setResults(prev => ({ ...prev, [currentQuestion.id]: false }));
-        moveToNext();
+        setAnswerFeedback('incorrect');
+        setTimeout(() => moveToNext(), 1000);
       }
     }
   };
@@ -70,7 +103,7 @@ export default function App() {
           </div>
           {gameState === 'quiz' && (
             <div className="text-[15px] font-medium text-[#666]">
-              {currentQuestionIndex + 1} / {questions.length}
+              {currentQuestionIndex + 1} / {currentQuizQuestions.length}
             </div>
           )}
         </div>
@@ -78,7 +111,7 @@ export default function App() {
           <div className="w-full max-w-3xl mx-auto bg-[#deded9] h-1.5 rounded-full overflow-hidden">
             <div 
               className="bg-[#171717] h-full transition-all duration-500 ease-out rounded-full"
-              style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
+              style={{ width: `${((currentQuestionIndex + 1) / currentQuizQuestions.length) * 100}%` }}
             />
           </div>
         )}
@@ -92,17 +125,19 @@ export default function App() {
           {gameState === 'quiz' && (
             <QuizScreen 
               key="quiz" 
-              question={questions[currentQuestionIndex]} 
+              question={currentQuizQuestions[currentQuestionIndex]} 
               onAnswer={handleAnswer}
               wrongAnswer={wrongAnswer}
               currentAttempts={currentAttempts}
+              answerFeedback={answerFeedback}
             />
           )}
           {gameState === 'result' && (
             <ResultScreen 
               key="result" 
               score={score} 
-              total={questions.length}
+              quizQuestions={currentQuizQuestions}
+              total={currentQuizQuestions.length}
               results={results}
               onRestart={startQuiz} 
             />
@@ -160,13 +195,15 @@ function QuizScreen({
   question, 
   onAnswer,
   wrongAnswer,
-  currentAttempts
+  currentAttempts,
+  answerFeedback
 }: { 
   key?: string;
   question: Question; 
   onAnswer: (ans: string) => void;
   wrongAnswer: string | null;
   currentAttempts: number;
+  answerFeedback: AnswerFeedback;
 }) {
   return (
     <motion.div
@@ -185,6 +222,15 @@ function QuizScreen({
           <span className="text-[13px] font-semibold text-[#FF3B30] animate-pulse">
             다시 한번 생각해 보세요! (기회 1번 남음)
           </span>
+        )}
+        {answerFeedback === 'correct' && (
+          <span className="text-[13px] font-semibold text-[#2f7d4a]">정답이에요! 잘 읽었어요.</span>
+        )}
+        {answerFeedback === 'retry' && (
+          <span className="text-[13px] font-semibold text-[#b35b2c]">좋아요. 지문을 한 번 더 살펴보세요.</span>
+        )}
+        {answerFeedback === 'incorrect' && (
+          <span className="text-[13px] font-semibold text-[#b35b2c]">이번 문항은 오답으로 기록했어요.</span>
         )}
       </div>
       
@@ -220,7 +266,7 @@ function QuizScreen({
                 <button
                   key={idx}
                   onClick={() => onAnswer(option)}
-                  disabled={wrongAnswer !== null}
+                  disabled={wrongAnswer !== null || answerFeedback === 'correct' || answerFeedback === 'incorrect'}
                   className={`text-left px-6 py-4 rounded-[20px] transition-all text-[17px] font-medium group relative overflow-hidden
                     ${isWrong 
                       ? 'bg-[#FF3B30]/10 text-[#FF3B30]' 
@@ -246,12 +292,14 @@ function QuizScreen({
 function ResultScreen({ 
   score, 
   total, 
+  quizQuestions,
   results,
   onRestart 
 }: { 
   key?: string;
   score: number; 
   total: number; 
+  quizQuestions: Question[];
   results: Record<string, boolean>;
   onRestart: () => void;
 }) {
@@ -263,12 +311,18 @@ function ResultScreen({
   else if (percentage >= 50) feedback = '잘하고 있어요! 꾸준히 책을 읽어보아요.';
   else feedback = '괜찮아요! 천천히 자음과 모음부터 다시 연습해 볼까요?';
 
-  const levelStats = questions.reduce((acc, q) => {
+  const levelStats = quizQuestions.reduce((acc, q) => {
     if (!acc[q.level]) acc[q.level] = { total: 0, correct: 0 };
     acc[q.level].total += 1;
     if (results[q.id]) acc[q.level].correct += 1;
     return acc;
   }, {} as Record<string, { total: number, correct: number }>);
+  const weakestLevel = Object.entries(levelStats).sort(
+    ([, a], [, b]) => a.correct / a.total - b.correct / b.total
+  )[0];
+  const analysis = weakestLevel && weakestLevel[1].correct < weakestLevel[1].total
+    ? `${weakestLevel[0]} 영역에서 ${weakestLevel[1].total - weakestLevel[1].correct}문제를 더 연습하면 좋아요. 짧은 글을 소리 내어 읽고, 핵심 낱말을 찾아보세요.`
+    : '모든 영역을 고르게 잘 풀었어요. 지금처럼 다양한 글을 읽으며 어휘를 넓혀 보세요.';
 
   return (
     <motion.div
@@ -316,6 +370,10 @@ function ResultScreen({
           {percentage >= 80 
             ? '모든 단계를 골고루 잘 이해하고 있어요. 앞으로도 다양한 책을 읽어보세요!' 
             : '틀린 문제가 있는 단계를 중심으로 복습해보면 더욱 좋아질 거예요!'}
+        </div>
+        <div className="mt-4 p-5 bg-[#f7f7f5] rounded-[20px] text-left">
+          <h4 className="font-bold text-[16px] mb-2">학습 분석</h4>
+          <p className="text-[#666] text-[15px] leading-relaxed">{analysis}</p>
         </div>
       </div>
 
