@@ -61,23 +61,23 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2F2F7] text-black font-sans selection:bg-[#007AFF]/20">
-      <header className="bg-white/70 backdrop-blur-xl border-b border-black/5 py-4 px-6 sticky top-0 z-50">
+    <div className="min-h-screen bg-[#f7f7f5] text-[#171717] font-sans selection:bg-[#171717]/10">
+      <header className="bg-[#f7f7f5]/90 backdrop-blur-xl border-b border-black/10 py-4 px-6 sticky top-0 z-50">
         <div className="flex items-center justify-between mb-3 max-w-3xl mx-auto">
-          <div className="flex items-center gap-2 text-[#007AFF]">
+          <div className="flex items-center gap-2 text-[#171717]">
             <BookOpen className="w-6 h-6" />
             <h1 className="text-xl font-semibold tracking-tight">한국어 읽기 진단평가</h1>
           </div>
           {gameState === 'quiz' && (
-            <div className="text-[15px] font-medium text-[#8E8E93]">
+            <div className="text-[15px] font-medium text-[#666]">
               {currentQuestionIndex + 1} / {questions.length}
             </div>
           )}
         </div>
         {gameState === 'quiz' && (
-          <div className="w-full max-w-3xl mx-auto bg-[#E5E5EA] h-1.5 rounded-full overflow-hidden">
+          <div className="w-full max-w-3xl mx-auto bg-[#deded9] h-1.5 rounded-full overflow-hidden">
             <div 
-              className="bg-[#007AFF] h-full transition-all duration-500 ease-out rounded-full"
+              className="bg-[#171717] h-full transition-all duration-500 ease-out rounded-full"
               style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
             />
           </div>
@@ -113,7 +113,7 @@ export default function App() {
   );
 }
 
-function WelcomeScreen({ onStart }: { onStart: () => void }) {
+function WelcomeScreen({ onStart }: { onStart: () => void; key?: string }) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20, scale: 0.98 }}
@@ -127,7 +127,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
       </div>
       <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-black">읽기 실력을 알아볼까요?</h2>
       <p className="text-[#8E8E93] text-[17px] mb-10 max-w-lg mx-auto leading-relaxed">
-        자음과 모음부터 짧은 글 읽기까지, 재미있는 그림과 함께 읽기 실력을 진단해 보세요.
+        자음과 모음부터 긴 글 읽기까지, 단계별 문항으로 읽기 실력을 진단해 보세요.
       </p>
       
       <div className="flex flex-wrap justify-center gap-3 mb-12 text-left">
@@ -162,6 +162,7 @@ function QuizScreen({
   wrongAnswer,
   currentAttempts
 }: { 
+  key?: string;
   question: Question; 
   onAnswer: (ans: string) => void;
   wrongAnswer: string | null;
@@ -189,7 +190,7 @@ function QuizScreen({
       
       <div className="p-6 md:p-10">
         {question.passage && (
-          <div className="mb-8 bg-[#F2F2F7] p-6 rounded-[24px]">
+          <div className="mb-8 bg-[#f4f4f1] border-l-2 border-[#171717] p-6 rounded-r-[8px]">
             <p className="text-[17px] md:text-[19px] leading-relaxed text-black font-medium">
               {question.passage}
             </p>
@@ -201,7 +202,7 @@ function QuizScreen({
         </h3>
 
         <div className="flex flex-col md:flex-row gap-8 mb-4">
-          {question.emoji && (
+          {question.emoji && !question.passage && (
             <div className="shrink-0 w-full md:w-64 aspect-square bg-[#F2F2F7] rounded-[28px] flex items-center justify-center overflow-hidden">
               <span 
                 className="text-8xl transition-transform duration-300"
@@ -248,6 +249,7 @@ function ResultScreen({
   results,
   onRestart 
 }: { 
+  key?: string;
   score: number; 
   total: number; 
   results: Record<string, boolean>;
