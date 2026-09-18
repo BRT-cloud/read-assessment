@@ -101,7 +101,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fbfaf7] text-[#29251f] font-sans selection:bg-[#f0d9c7]">
+    <div className="min-h-screen bg-[#f4f000] text-[#111] font-sans selection:bg-[#00e5ff]">
       <header className="bg-[#fbfaf7] border-b border-[#e8e0d7] py-5 px-5 sticky top-0 z-50">
         <div className="flex items-center justify-between mb-3 max-w-3xl mx-auto">
           <div className="flex items-center gap-3 text-[#29251f]">
@@ -117,7 +117,7 @@ export default function App() {
         {gameState === 'quiz' && (
           <div className="w-full max-w-3xl mx-auto bg-[#ebe4dc] h-2 rounded-full overflow-hidden">
             <div 
-              className="bg-[#d7835b] h-full transition-all duration-500 ease-out rounded-full"
+              className="bg-[#111] h-full transition-all duration-500 ease-out rounded-full"
               style={{ width: `${((currentQuestionIndex + 1) / currentQuizQuestions.length) * 100}%` }}
             />
           </div>
@@ -164,7 +164,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void; key?: string }) {
       transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
       className="bg-white border border-[#e8e0d7] rounded-[24px] shadow-[0_8px_30px_rgba(67,48,32,0.05)] p-7 md:p-11 text-center"
     >
-      <div className="w-20 h-20 bg-[#f8e4d7] text-[#c76842] rounded-[22px] flex items-center justify-center mx-auto mb-6">
+      <div className="w-20 h-20 bg-[#00e5ff] text-[#111] rounded-[22px] flex items-center justify-center mx-auto mb-6">
         <BookOpen className="w-10 h-10" />
       </div>
       <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-[#29251f]">읽기 실력을 알아볼까요?</h2>
@@ -181,7 +181,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void; key?: string }) {
           { title: '5단계', desc: '문단 이해하기' },
         ].map((step, i) => (
           <div key={i} className="flex-1 min-w-[130px] max-w-[200px] bg-[#fbf7f2] border border-[#eee4da] p-4 rounded-[16px]">
-            <div className="text-[#c76842] font-bold text-[14px] mb-1 tracking-wide">{step.title}</div>
+            <div className="text-[#1769ff] font-bold text-[14px] mb-1 tracking-wide">{step.title}</div>
             <div className="font-bold text-[#29251f] text-[16px]">{step.desc}</div>
           </div>
         ))}
@@ -222,7 +222,7 @@ function QuizScreen({
       className="bg-white border border-[#e8e0d7] rounded-[24px] shadow-[0_8px_30px_rgba(67,48,32,0.05)] overflow-hidden"
     >
       <div className="px-6 py-5 flex items-center justify-between border-b border-black/5">
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-[14px] font-bold bg-[#f8e4d7] text-[#b85e3c]">
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-[14px] font-bold bg-[#00e5ff] text-[#111]">
           {question.level} 단계
         </span>
         {currentAttempts > 0 && wrongAnswer && (
@@ -243,7 +243,7 @@ function QuizScreen({
       
       <div className="p-6 md:p-10">
         {question.passage && (
-          <div className="mb-8 bg-[#fbf7f2] border-l-2 border-[#d7835b] p-6 rounded-r-[8px]">
+          <div className="mb-8 bg-white border-l-2 border-[#1769ff] p-6 rounded-r-[8px]">
             <p className="text-[19px] md:text-[21px] leading-[1.8] text-[#29251f] font-bold">
               {question.passage}
             </p>
@@ -258,6 +258,8 @@ function QuizScreen({
           {question.emoji && !question.passage && (
             <div className="shrink-0 w-full md:w-64 aspect-square bg-[#fbf7f2] border border-[#eee4da] rounded-[20px] flex items-center justify-center overflow-hidden">
               <span 
+                role="img"
+                aria-label={question.imageAlt}
                 className="text-8xl transition-transform duration-300"
                 style={{ transform: `scale(${question.imageScale || 1})` }}
               >
@@ -373,7 +375,7 @@ function ResultScreen({
             </div>
           ))}
         </div>
-        <div className="mt-8 p-4 bg-[#f8e4d7] rounded-[14px] text-[#a95537] text-[16px] font-bold text-center leading-relaxed">
+        <div className="mt-8 p-4 bg-[#00e5ff] rounded-[14px] text-[#111] text-[16px] font-bold text-center leading-relaxed">
           {percentage >= 80 
             ? '모든 단계를 골고루 잘 이해하고 있어요. 앞으로도 다양한 책을 읽어보세요!' 
             : '틀린 문제가 있는 단계를 중심으로 복습해보면 더욱 좋아질 거예요!'}
